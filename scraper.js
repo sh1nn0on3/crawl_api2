@@ -43,7 +43,7 @@ const scraper = (browser, link) =>
 
       const scrapeData = {};
 
-      // lấy header đầu link vào trang
+      // ------- lấy header đầu link vào trang -------
       const headerData = await newPage.$eval(
         "#default > div > div > div > div > section > div:nth-child(2) > ol > li> article > div.image_container ",
         (el) => {
@@ -53,9 +53,10 @@ const scraper = (browser, link) =>
         }
       );
 
+      // ------ lưu link vào trang vào scrapeData -------
       scrapeData.header = headerData;
 
-      // lấy link details item
+      //----- lấy link details item -------
       const detailsLinks = await newPage.$$eval(
         "#default > div > div > div > div > section > div:nth-child(2) > ol > li> article > div.image_container ",
         (els) => {
@@ -79,51 +80,69 @@ const scraper = (browser, link) =>
 
             const detailData = {};
             // hàm cạo
-            // cạo ảnh
+
+            //------ cạo ảnh ------
             const images = await pageDetail.$eval(
               "#product_gallery > div > div > div ",
               (el) => {
                 return {
-                  link: el.querySelector("img").src,
+                  imageUrl: el.querySelector("img").src,
                 };
               }
             );
 
             detailData.images = images;
 
-            // lấy inf
+            // ------ lấy info ------
             const header = await pageDetail.$eval(
               "#content_inner > article > div.row > div.col-sm-6.product_main",
               (els) => {
                 return {
-                  title: els.querySelector("h1").innerText,
-                  price: els.querySelector("p").innerText,
+                  bookTitle: els.querySelector("h1").innerText,
+                  bookPrice: els.querySelector("p").innerText,
                 };
               }
             );
 
             detailData.header = header;
 
-            console.log(
-              "🚀 ~ file: scraper.js:107 ~ newPromise ~ detailData:",
-              detailData
+            // ------ content --------
+
+            const headerContent = await pageDetail.$eval(
+              "#content_inner > article",
+              (els) => {
+                return {
+                  description: els.querySelector("article > p").innerText,
+                };
+              }
             );
 
+            detailData.content = headerContent;
+
+            // ------------------------------
+
             await pageDetail.close();
-            res();
+            res(detailData);
           } catch (error) {
             console.log("lỗi ở scraperDetail " + error);
             rej(error);
           }
         });
 
+      // --------- lọc và lưu cái data vừa cào ---------
+      const details = [];
       for (let link of detailsLinks) {
-        await scraperDetail(link);
+        const detail = await scraperDetail(link);
+        details.push(detail);
       }
 
+      // -------- lưu details vào scrapeData-------
+      scrapeData.body = details;
+
+      // ------ hàm kết ---------
       await newPage.close();
       console.log(">> Trình duyệt đã đóng");
-      res();
+      res(scrapeData);
     } catch (error) {
       console.log("lỗi ở scraper " + error);
       rej(error);

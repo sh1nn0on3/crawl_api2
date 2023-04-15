@@ -1,3 +1,4 @@
+https://www.youtube.com/watch?v=rR5vN7SLZww&t=2369s
 npm puppeteer 
         --> lưu ý : phải dùng BĐB async/await
     + let browser = puppeteer.launch()
@@ -14,3 +15,6 @@ npm puppeteer
                         --> khi trả data nó ra mảng nên tiếp sẽ dùng map để tìm :v  
         + ...
     + hàm đóng page.close()
+
++ làm xog dùng đọc file 
+    + fs json
